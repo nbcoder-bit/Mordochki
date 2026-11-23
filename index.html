@@ -115,6 +115,8 @@ button:focus-visible{outline:3px solid var(--hi);outline-offset:2px}
 .nav{width:64px;height:64px;object-fit:contain;border-radius:16px;background:rgba(255,255,255,.06);border:2px solid var(--gold)}
 #nkinp{width:100%;height:50px;border-radius:14px;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:var(--fg);font:600 18px "Comfortaa","Nunito",system-ui,sans-serif;text-align:center;outline:none;-webkit-user-select:text;user-select:text}
 #nkinp:focus{border-color:var(--gold)}
+#oB textarea.code{width:100%;max-width:340px;height:96px;border-radius:14px;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:var(--fg);font:600 11px "Comfortaa","Nunito",system-ui,sans-serif;padding:10px;resize:none;outline:none;-webkit-user-select:text;user-select:text;word-break:break-all;line-height:1.5}
+#oB textarea.code:focus{border-color:var(--gold)}
 #ach{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 6px);transform:translate(-50%,-180%);transition:transform .4s cubic-bezier(.2,1.4,.4,1);z-index:50;background:linear-gradient(135deg,#2b2140,#1a1028);color:#fff;border:2px solid var(--gold);border-radius:18px;padding:10px 18px;display:flex;flex-direction:column;align-items:center;gap:2px;max-width:92vw;text-align:center;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.6),0 0 24px rgba(255,211,77,.25);font-size:14px;overflow:hidden}
 #ach::after{content:"";position:absolute;top:0;left:-70%;width:45%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.25),transparent);animation:shine 2.8s ease-in-out infinite}
 @keyframes shine{0%,55%{left:-70%}75%,100%{left:130%}}
@@ -166,7 +168,7 @@ button{font:inherit;color:var(--fg)}
 .knav .kr{flex:none;font-size:24px;line-height:1;color:var(--gold);opacity:.85;font-weight:700}
 /* вкладки «Событий» */
 .seg.evt{width:100%;max-width:330px}
-.seg.evt button{flex:1;min-width:0;height:auto;min-height:34px;font-size:11.5px;padding:4px 6px;white-space:normal}
+.seg.evt button{flex:1;min-width:0;height:auto;min-height:34px;font-size:11.5px;padding:4px 6px;white-space:normal} /* вкладки «Рейтинг»: Мой / Общий */ .seg.rtab{width:100%;max-width:330px} .seg.rtab button{flex:1;min-width:0;height:auto;min-height:34px;font-size:11.5px;padding:4px 6px;white-space:normal}
 /* экранный джойстик */
 #joy{width:124px;height:124px;border-radius:50%;background:radial-gradient(circle at 50% 38%,rgba(255,255,255,.11),rgba(255,255,255,.03) 72%);border:1px solid rgba(255,255,255,.16);position:relative;touch-action:none;flex:none}
 #joyknob{position:absolute;left:50%;top:50%;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;background:radial-gradient(circle at 50% 35%,#9d8cff,#5a48d8);box-shadow:0 6px 16px rgba(0,0,0,.5),inset 0 -3px 8px rgba(0,0,0,.25);pointer-events:none}
@@ -201,6 +203,15 @@ body.fs.nopad #stage{width:min(100%,900px,calc((100vh - 170px)*19/17));width:min
 <div id="joy" style="display:none"><div id="joyknob"></div></div>
 <div id="side"><button id="snd" aria-label="Звуки">🔊</button><button id="mus" aria-label="Музыка вкл/выкл">🎵</button><button id="next" aria-label="Следующая случайная песня">🔀</button><button id="qdance" aria-label="Танец">🕺</button></div>
 </div>
+<!-- Библиотека Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://urqapkdlmewznxvqmcfv.supabase.co";
+const SUPABASE_KEY = "sb_publishable_VCeCHbormbJ9rjEI30ncCg_RY_eysQx";
+/* клиент виден всему игровому коду; если CDN недоступен — null, игра работает без рейтинга */
+const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+if(supabaseClient) console.log("Supabase подключён!");
+</script>
 <script>
 const T=32,COLS=19,ROWS=17,W=COLS*T,H=ROWS*T,HZ=90,DT=1000/HZ,S=n=>n*HZ|0;
 /* лабиринты: ядро дома Вод (строки 8-10) фиксированное; верх, низ и коридоры
@@ -450,7 +461,7 @@ FL.forEach(f=>{
   if(f.src!=null)f.img.src=f.src;else f.img.src=SRC[f.id];
 });
 let grid,ck,dots,score=0,hi=0,lives=3,level=1,state='title',pac,ghosts,scared=0,combo=0,timer=0,pops=[],want=null,steps=0,SK=6,paused=false,pickOpen=true;
-let turbo=0,freeze=0,giant=0,swapT=0,bonus=null,bt=0,parts=[],bub={},recent=[],shake=0,chain=0,chainT=0,toast=null,panic=false,mlab=null,runMs=0,runSaved=true,lastRun=null,sortBy='s',modeF='4',recOpen=false,killsRun=0,levelStart=0,runBase=0,dcActive=false,rainbowCount=0,goldenTime=0,huntTime=0,nextHunt=30000,shield=0,hunter=0,srActive=false,radbow=0,clownTime=0,eatStreak=0,magnet=0,flipAnim=0,lightning=null,nextLightning=45000;
+let turbo=0,freeze=0,giant=0,swapT=0,bonus=null,bt=0,parts=[],bub={},recent=[],shake=0,chain=0,chainT=0,toast=null,panic=false,mlab=null,runMs=0,runSaved=true,lastRun=null,sortBy='s',modeF='4',recTab='my',recReq=0,recOpen=false,killsRun=0,levelStart=0,runBase=0,dcActive=false,rainbowCount=0,goldenTime=0,huntTime=0,nextHunt=30000,shield=0,hunter=0,srActive=false,radbow=0,clownTime=0,eatStreak=0,magnet=0,flipAnim=0,lightning=null,nextLightning=45000;
 const loadRec=()=>{try{const a=JSON.parse(localStorage.getItem('pf_rec')||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
 const VER='0.6.1.6';
 const THEMES=[
@@ -532,11 +543,38 @@ function saveRun(){
   try{const a=loadRec(),i=a.findIndex(r=>r.d===runId);if(i>=0)a[i]=lastRun;else a.push(lastRun);if(a.length>300)a.splice(0,a.length-300);localStorage.setItem('pf_rec',JSON.stringify(a));localStorage.setItem('pf_hi',hi)}catch(e){}
   persist();
 }
+/* общий рейтинг: свой uid и выгрузка завершённого забега в Supabase (тихо, игру не блокирует) */
+function myUid(){
+  if(typeof SAVE.uid!=='string'||!SAVE.uid){
+    let u='';try{u=(typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():''}catch(e){}
+    if(!u)u='u'+Date.now().toString(36)+Math.random().toString(36).slice(2,10);
+    SAVE.uid=u;persist();
+  }
+  return SAVE.uid;
+}
+function pushCloud(){
+  if(typeof supabaseClient==='undefined'||!supabaseClient||!lastRun||!(lastRun.s>0))return;
+  try{
+    const r={uid:myUid(),n:lastRun.n,ac:lastRun.ac||0,s:lastRun.s,t:lastRun.t||0,w:lastRun.w,k:lastRun.k||0,l:lastRun.l||1,d:lastRun.d||0};
+    supabaseClient.from('scores').insert(r).then(()=>{},()=>{});
+  }catch(e){}
+}
+/* события онлайн: выгрузка результата вызова дня и рекорда спидрана (тихо, игру не блокирует) */
+function todayKey(){const t=new Date(),p=x=>String(x).padStart(2,'0');return t.getFullYear()+'-'+p(t.getMonth()+1)+'-'+p(t.getDate())}
+function pushEvent(kind,f){
+  if(typeof supabaseClient==='undefined'||!supabaseClient)return;
+  try{
+    const row={kind:kind,uid:myUid(),n:nic(),d:todayKey()};
+    if(kind==='daily')row.s=f.s;else row.t=f.t;
+    supabaseClient.from('events').insert(row).then(()=>{},()=>{});
+  }catch(e){}
+}
 function finishRun(){
   if(!runId||runDone||(score-runBase<=0&&runMs<3000))return;
   runDone=true;SAVE.games=(SAVE.games||0)+1;persist();
-  if(dcActive&&SAVE.dc){const sc=score-runBase;if(!SAVE.dc.t)SAVE.dc.t=[];SAVE.dc.t.push({s:sc,n:nic()});SAVE.dc.t.sort((a,b)=>b.s-a.s);if(SAVE.dc.t.length>3)SAVE.dc.t.length=3;SAVE.dc.b=SAVE.dc.t[0].s;persist()}
-  if(srActive&&SAVE.sr){const t=Math.round(runMs/1000);if(!SAVE.sr.b||t<SAVE.sr.b){SAVE.sr.b=t;persist()}}
+  pushCloud();
+  if(dcActive&&SAVE.dc){const sc=score-runBase;if(!SAVE.dc.t)SAVE.dc.t=[];SAVE.dc.t.push({s:sc,n:nic()});SAVE.dc.t.sort((a,b)=>b.s-a.s);if(SAVE.dc.t.length>3)SAVE.dc.t.length=3;SAVE.dc.b=SAVE.dc.t[0].s;persist();if(sc>0)pushEvent('daily',{s:sc})}
+  if(srActive&&SAVE.sr){const t=Math.round(runMs/1000);if(!SAVE.sr.b||t<SAVE.sr.b){SAVE.sr.b=t;persist();pushEvent('speed',{t:t})}}
   for(const a of ACH)if(a.k==='g'&&!SAVE.a[a.id]&&SAVE.games>=a.n)unlock(a);
   if(score-runBase===0&&runMs>=3000)for(const a of ACH)if(a.k==='z0'&&!SAVE.a[a.id])unlock(a);
 }
@@ -1711,7 +1749,7 @@ function syncBtns(){$('bf').style.display=ovOpen?'none':'';$('again').style.disp
 function play(){ac();const ch=!fresh()&&sel()!==snap;closeOv();if(fresh()||ch){dcActive=false;srActive=false;newGame()}}
 function restart(){ac();saveRun();if(!LG.length&&(score>0||runMs>3000)){state='over';finishRun();openScr('rec',true)}else{closeOv();newGame()}}
 function toggleSnd(){snd=!snd;SAVE.snd=snd?1:0;persist();$('snd').textContent=snd?'🔊':'🔇';ac()}
-function renderScr(arg){oB.innerHTML='';oF.innerHTML='';({menu:rMenu,chars:rChars,rec:rRec,ach:rAch,theme:rTheme,maze:rMaze,nick:rNick,music:rMusic,help:rHelp,events:rEvents,set:rSet,keys:rKeys})[scr](arg)}
+function renderScr(arg){oB.innerHTML='';oF.innerHTML='';({menu:rMenu,chars:rChars,rec:rRec,ach:rAch,theme:rTheme,maze:rMaze,nick:rNick,music:rMusic,help:rHelp,events:rEvents,set:rSet,keys:rKeys,save:rSave})[scr](arg)}
 const back=()=>oF.append(mkb2('← Меню','',()=>{hintTx='';openScr('menu')}));
 function titleHTML(){
   const t='Мордочки';let s='';
@@ -1805,28 +1843,55 @@ function rRec(end){
   const ML={4:'4 Воды (классика)',0:'Без Вод (нулевой)',1:'1 Вода',2:'2 Воды',3:'3 Воды',5:'5 Вод',6:'6 Вод',7:'7 Вод',a:'Все составы'},SN={s:'Очки',t:'Время',k:'Съеденные Воды'};
   const sOpts=[['s','Очки'],['t','Время'],['k','Съеденные Воды']].filter(o=>modeF!=='0'||o[0]!=='k');
   const mOpts=[['4','4 Воды (классика)'],['0','Без Вод (нулевой)'],['1','1 Вода'],['2','2 Воды'],['3','3 Воды'],['5','5 Вод'],['6','6 Вод'],['7','7 Вод'],['a','Все составы']];
+  /* вкладки рейтинга: «Мой» — рекорды этого устройства, «Общий» — топ среди всех аккаунтов (Supabase) */
+  const tg=el('div','seg rtab');
+  [['👤 Мой','my'],['🌍 Общий','all']].forEach(([nm,t])=>{
+    tg.append(mkb2(nm,recTab===t?'on':'',()=>{if(recTab!==t){recTab=t;renderScr(end)}}));
+  });
+  oB.append(tg);
   const bar=el('div','ddbar');
   bar.append(ddmenu(sortBy,SN[sortBy],sOpts,v=>{sortBy=v;renderScr(end)}),ddmenu(modeF,ML[modeF],mOpts,v=>{modeF=v;renderScr(end)}));
   oB.append(bar);
-  const okR=r=>modeF==='a'||(+r.w||0)===+modeF;
-  let a=loadRec().filter(okR);
-  if(sortBy==='t'){a=a.filter(r=>r.l>=2);a.sort((x,y)=>x.t-y.t||y.s-x.s)}
-  else if(sortBy==='k')a.sort((x,y)=>(y.k||0)-(x.k||0)||y.s-x.s);
-  else a.sort((x,y)=>y.s-x.s||x.t-y.t);
-  a=a.slice(0,10);
   const dt=d=>{const o=new Date(+d),p=n=>String(n).padStart(2,'0');return p(o.getDate())+'.'+p(o.getMonth()+1)+'.'+String(o.getFullYear()).slice(2)};
   const note={s:'больше — лучше',t:'меньше — лучше; только забеги с пройденным уровнем',k:'больше — лучше; съедено Вод в этом забеге'}[sortBy];
-  let tb;
-  if(a.length){
-    tb='<table><tr><th>#</th><th>Кто</th><th>'+(sortBy==='t'?'Время':sortBy==='k'?'Съедено Вод':'Очки')+'</th><th>Очки</th><th>Время</th><th>Воды</th><th>Ур.</th><th>Дата</th></tr>';
-    a.forEach((r,i)=>{
-      const main=sortBy==='t'?fmtT(r.t):sortBy==='k'?(r.k||0):(+r.s||0);
-      tb+='<tr'+(lastRun&&r.d===lastRun.d?' class="me"':'')+'><td>'+(i<3?MED[i]:i+1)+'</td><td class="who">'+(r.n||'Аноним')+'<small>🎖'+(r.ac||0)+'</small></td><td class="m1">'+main+'</td><td>'+(+r.s||0)+'</td><td>'+fmtT(r.t)+'</td><td>'+(+r.w||0)+'</td><td>'+(+r.l||1)+'</td><td>'+dt(r.d)+'</td></tr>';
-    });
-    tb+='</table>';
-  }else tb='<p class="empty">Пока пусто — сыграй забег'+(modeF==='a'?'':modeF==='0'?' без Вод':' с '+modeF+' Водами')+'.</p>';
-  const wd=el('div');wd.id='tbl';wd.innerHTML=tb;
-  oB.append(wd,el('p','hint',note+(modeF==='0'?' · нулевой режим считается отдельно':'')+(modeF==='a'?'':' · состав: '+ML[modeF])));
+  const thd='<table><tr><th>#</th><th>Кто</th><th>'+(sortBy==='t'?'Время':sortBy==='k'?'Съедено Вод':'Очки')+'</th><th>Очки</th><th>Время</th><th>Воды</th><th>Ур.</th><th>Дата</th></tr>';
+  const row=(r,i2,mine)=>'<tr'+(mine?' class="me"':'')+'><td>'+(i2<3?MED[i2]:i2+1)+'</td><td class="who">'+(r.n||'Аноним')+'<small>🎖'+(r.ac||0)+'</small></td><td class="m1">'+(sortBy==='t'?fmtT(r.t):sortBy==='k'?(r.k||0):(+r.s||0))+'</td><td>'+(+r.s||0)+'</td><td>'+fmtT(r.t)+'</td><td>'+(+r.w||0)+'</td><td>'+(+r.l||1)+'</td><td>'+dt(r.d)+'</td></tr>';
+  const wd=el('div');wd.id='tbl';
+  const comp=(modeF==='a'?' · все составы вместе':modeF==='0'?' · нулевой режим считается отдельно':' · состав: '+ML[modeF]);
+  if(recTab==='all'){
+    oB.append(wd);
+    if(typeof supabaseClient==='undefined'||!supabaseClient)wd.innerHTML='<p class="empty">🌍 Общий рейтинг недоступен: нет подключения.<br><small>Игра работает и без него.</small></p>';
+    else{
+      wd.innerHTML='<p class="empty">⏳ Загружаем общий рейтинг…</p>';
+      const tok=++recReq;
+      let q=supabaseClient.from('scores').select('n,ac,s,t,w,k,l,d,uid').limit(10);
+      if(modeF!=='a')q=q.eq('w',+modeF);
+      if(sortBy==='t')q=q.gte('l',2).order('t',{ascending:true}).order('s',{ascending:false});
+      else if(sortBy==='k')q=q.order('k',{ascending:false}).order('s',{ascending:false});
+      else q=q.order('s',{ascending:false}).order('t',{ascending:true});
+      q.then(res=>{
+        if(!wd.isConnected||tok!==recReq)return;
+        if(res.error){wd.innerHTML='<p class="empty">🌍 Общий рейтинг пока недоступен.<br><small>'+(res.error.message||'ошибка запроса')+'</small></p>';return}
+        const a=res.data||[];
+        if(!a.length){wd.innerHTML='<p class="empty">Пока пусто — общий топ появится, когда игроки завершат забеги.</p>';return}
+        let tb=thd;a.forEach((r,i2)=>tb+=row(r,i2,SAVE.uid&&r.uid===SAVE.uid));
+        wd.innerHTML=tb+'</table>';
+      }).catch(()=>{if(wd.isConnected&&tok===recReq)wd.innerHTML='<p class="empty">🌍 Нет связи с общим рейтингом. Проверь интернет.</p>'});
+    }
+    oB.append(el('p','hint','Общий топ-10 среди всех аккаунтов · '+note+comp));
+  }else{
+    const okR=r=>modeF==='a'||(+r.w||0)===+modeF;
+    let a=loadRec().filter(okR);
+    if(sortBy==='t'){a=a.filter(r=>r.l>=2);a.sort((x,y)=>x.t-y.t||y.s-x.s)}
+    else if(sortBy==='k')a.sort((x,y)=>(y.k||0)-(x.k||0)||y.s-x.s);
+    else a.sort((x,y)=>y.s-x.s||x.t-y.t);
+    a=a.slice(0,10);
+    let tb;
+    if(a.length){tb=thd;a.forEach((r,i2)=>tb+=row(r,i2,lastRun&&r.d===lastRun.d));tb+='</table>'}
+    else tb='<p class="empty">Пока пусто — сыграй забег'+(modeF==='a'?'':modeF==='0'?' без Вод':' с '+modeF+' Водами')+'.</p>';
+    wd.innerHTML=tb;
+    oB.append(wd,el('p','hint',note+comp));
+  }
   if(end)oF.append(mkb2('▶ Играть','pri',play));
   back();
 }
@@ -1904,19 +1969,58 @@ function rDaily(){
   const dd=String(t.getDate()).padStart(2,'0')+'.'+String(t.getMonth()+1).padStart(2,'0')+'.'+t.getFullYear();
   oB.append(el('div','tx','<b>Сегодня: '+dd+'</b><br>Карта «Лабиринт» — процедурная, каждый день новая.<br>Все игроки получают один и тот же сид даты — можно соревноваться.'));
   oB.append(mkb2('▶ Играть вызов','pri big',()=>{dcActive=true;SAVE.mzm='one';SAVE.mzs=4;persist();closeOv();newGame()}));
-  if(SAVE.dc.t&&SAVE.dc.t.length){
-    oB.append(el('div','ch','🏆 Топ-3 за сегодня'));
-    SAVE.dc.t.forEach((r,i)=>{const med=['🥇','🥈','🥉'][i];oB.append(el('div','ar'+(i===0?' done':''),'<span class="ai">'+med+'</span><div class="at"><b>'+(r.n||'Аноним')+'</b><small>'+r.s+' очков</small></div>'))});
-  }else oB.append(el('p','hint','🏆 Лучший результат сегодня: <b>'+(SAVE.dc.b||0)+'</b> очков'));
-  oB.append(el('p','hint','Очки идут в общий рейтинг, но топ-3 дня сохраняются отдельно. Можно переигрывать.'));
+  /* топ-3 дня — онлайн среди всех игроков; без сети показываем местный топ */
+  const wd=el('div','evtop');
+  oB.append(wd);
+  const localTop=()=>{
+    if(SAVE.dc.t&&SAVE.dc.t.length){
+      let h='<div class="ch">🏆 Топ-3 за сегодня (на этом устройстве)</div>';
+      SAVE.dc.t.forEach((r,i)=>{const med=['🥇','🥈','🥉'][i];h+='<div class="ar'+(i===0?' done':'')+'"><span class="ai">'+med+'</span><div class="at"><b>'+(r.n||'Аноним')+'</b><small>'+r.s+' очков</small></div></div>'});
+      wd.innerHTML=h;
+    }else wd.innerHTML='<p class="hint">🏆 Лучший результат сегодня: <b>'+(SAVE.dc.b||0)+'</b> очков</p>';
+  };
+  if(typeof supabaseClient==='undefined'||!supabaseClient)localTop();
+  else{
+    wd.innerHTML='<p class="empty">⏳ Загружаем топ дня…</p>';
+    const tok=++evReq;
+    supabaseClient.from('events').select('n,s,uid').eq('kind','daily').eq('d',ds).order('s',{ascending:false}).limit(3)
+      .then(res=>{
+        if(!wd.isConnected||tok!==evReq)return;
+        if(res.error){localTop();return}
+        const a=res.data||[];
+        if(!a.length){wd.innerHTML='<p class="empty">Пока никто не сыграл вызов сегодня — стань первым!</p>';return}
+        let h='<div class="ch">🏆 Топ-3 за сегодня · среди всех игроков</div>';
+        a.forEach((r,i)=>{const med=['🥇','🥈','🥉'][i];h+='<div class="ar'+(i===0?' done':'')+'"><span class="ai">'+med+'</span><div class="at"><b>'+(r.n||'Аноним')+(SAVE.uid&&r.uid===SAVE.uid?' — это ты':'')+'</b><small>'+r.s+' очков</small></div></div>'});
+        wd.innerHTML=h;
+      }).catch(()=>{if(wd.isConnected&&tok===evReq)localTop()});
+  }
+  oB.append(el('p','hint','Твой результат сегодня: <b>'+(SAVE.dc.b||0)+'</b> очков · топ-3 дня приходит из сети и обновляется сам. Можно переигрывать.'));
 }
 function rSpeedrun(){
   oB.append(el('div','tx','<b>Спидран</b> — особый забег на время.<br>Только Классика, без бонусов, без Вод-охоты.<br>Цель: пройти уровень как можно быстрее.<br><br>🏆 Твой лучший результат: <b>'+(SAVE.sr&&SAVE.sr.b?fmtT(SAVE.sr.b):'—')+'</b>'));
   oB.append(mkb2('▶ Старт спидрана','pri big',()=>{srActive=true;SAVE.mzm='one';SAVE.mzs=0;persist();closeOv();newGame()}));
+  /* лучшие времена — из сети, среди всех игроков */
+  const wr=el('p','hint','');
+  oB.append(wr);
+  if(typeof supabaseClient==='undefined'||!supabaseClient)wr.innerHTML='🌍 Рекорды среди всех игроков недоступны (нет сети).';
+  else{
+    wr.innerHTML='⏳ Загружаем лучшие времена…';
+    const tok=++evReq;
+    supabaseClient.from('events').select('n,t,uid').eq('kind','speed').order('t',{ascending:true}).limit(5)
+      .then(res=>{
+        if(!wr.isConnected||tok!==evReq)return;
+        if(res.error){wr.innerHTML='🌍 Рекорды среди всех игроков пока недоступны.';return}
+        const a=res.data||[];
+        if(!a.length){wr.innerHTML='🌍 Рекорда среди всех пока нет — поставь свой!';return}
+        let h='🌍 <b>Лучшие времена среди всех игроков:</b><br>';
+        a.forEach((r,i)=>{h+=(i+1)+'. <b>'+(r.n||'Аноним')+(SAVE.uid&&r.uid===SAVE.uid?' — это ты':'')+'</b> · '+fmtT(r.t)+'<br>'});
+        wr.innerHTML=h;
+      }).catch(()=>{if(wr.isConnected&&tok===evReq)wr.innerHTML='🌍 Рекорды среди всех игроков недоступны (нет сети).'});
+  }
   oB.append(el('p','hint','В спидране нет бонусов (подарки не появляются), всегда Классика, Воды не уходят на охоту. Рейтинг по времени — меньше лучше.'));
 }
 /* события: вызов дня, спидран и адвент — вкладки одного экрана */
-let evTab='daily';
+let evTab='daily',evReq=0;
 function rEvents(){
   oT.textContent='🎪 События';
   const at=advInit(),aNew=at.dec&&!SAVE.adv.o.includes(at.d);
@@ -1971,6 +2075,7 @@ function rSet(){
   ]);
   if(hasKB)oB.append(mkb2('<span class="ke">⌨</span><span class="kb"><b>Настройка клавиш</b><small>стрелки и WASD — всегда; кнопкам ☰ 🔄 🔊 🎵 🔀 🕺 — свои (стандартные уже стоят)</small></span><span class="kr">›</span>','knav',()=>{openScr('keys')}));
   else oB.append(el('p','hint','⌨ Свои клавиши появятся здесь, когда подключится клавиатура.'));
+  oB.append(mkb2('<span class="ke">💾</span><span class="kb"><b>Код сохранения</b><small>перенос прогресса в Telegram или на другое устройство</small></span><span class="kr">›</span>','knav',()=>{openScr('save')}));
   if(hasPad)oB.append(el('p','hint','🎮 Джойстик подключён: крестовина и стик — направления, Start — меню. Работает всегда.'));
   st(SAVE.talk!==0,'💬 Фразы мордочек: '+(SAVE.talk!==0?'вкл':'выкл'),'пузырьки с репликами над мордами',()=>{SAVE.talk=SAVE.talk!==0?0:1;persist();renderScr()});
   back();
@@ -1994,6 +2099,58 @@ function rKeys(){
   }
   if(Object.keys(ck).length)oB.append(mkb2('↺ Сбросить клавиши на стандартные','tc2',()=>{SAVE.keys={};capDir=null;persist();sfx.click();renderScr()}));
   oB.append(el('p','hint','Стрелки и WASD вшиты навсегда — их нельзя сместить; свои только добавляются сверху.'));
+  back();
+}
+/* код сохранения: весь прогресс одной строкой — перенос между устройствами и в Telegram */
+function b64e(s){const u=new TextEncoder().encode(s);let b='';for(let i=0;i<u.length;i++)b+=String.fromCharCode(u[i]);return btoa(b)}
+function b64d(t){const b=atob((t||'').replace(/\s+/g,''));const u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return new TextDecoder().decode(u)}
+function saveCode(){
+  try{
+    let rec=[];try{rec=JSON.parse(localStorage.getItem('pf_rec')||'[]')||[]}catch(e){}
+    if(rec.length>100)rec=rec.slice(-100);
+    return b64e(JSON.stringify({v:1,s:SAVE,r:rec,h:+localStorage.getItem('pf_hi')||0}));
+  }catch(e){return ''}
+}
+function applySaveCode(v){
+  const o=JSON.parse(b64d(v));
+  if(!o||o.v!==1||!o.s||typeof o.s!=='object'||typeof o.s.a!=='object'||Array.isArray(o.s.a)||!Array.isArray(o.s.g))throw new Error('код не распознан');
+  Object.assign(SAVE,o.s);
+  if(!SAVE.a||typeof SAVE.a!=='object'||Array.isArray(SAVE.a))SAVE.a={};
+  if(!Array.isArray(SAVE.g))SAVE.g=[1,2,3,4];
+  if(typeof SAVE.name!=='string')SAVE.name='';
+  if(!SAVE.mz||typeof SAVE.mz!=='object'||Array.isArray(SAVE.mz))SAVE.mz={};
+  localStorage.setItem('pf_save',JSON.stringify(SAVE));
+  localStorage.setItem('pf_rec',JSON.stringify(Array.isArray(o.r)?o.r:[]));
+  localStorage.setItem('pf_hi',String(+o.h||0));
+}
+function rSave(){
+  oT.textContent='💾 Код сохранения';
+  oB.append(el('p','hint','Код — это весь прогресс одной строкой: очки и рекорды, достижения, ник, тема, музыка и настройки. Скопируй его на одном устройстве и вставь на другом (например, в Telegram) — продолжишь с того же места.'));
+  oB.append(el('div','ch','📤 Скопировать код'));
+  const out=el('textarea','code');out.readOnly=true;out.value=saveCode();
+  out.onclick=()=>out.select();out.onkeydown=e=>e.stopPropagation();
+  oB.append(out);
+  oB.append(mkb2('📋 Скопировать код','pri',()=>{
+    const ok=()=>stat.textContent='✔ Код скопирован — вставь его в Telegram или на другом устройстве.';
+    const manual=()=>{out.select();try{document.execCommand('copy');ok()}catch(e){stat.textContent='⚠ Скопируй вручную: тапни по верхнему полю — код выделится целиком.'}};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(out.value).then(ok,manual);
+    else manual();
+  }));
+  oB.append(el('div','ch','📥 Вставить код'));
+  const inp=el('textarea','code');inp.placeholder='Вставь код сюда и нажми «Загрузить»…';
+  inp.onkeydown=e=>e.stopPropagation();
+  oB.append(inp);
+  const stat=el('p','hint','');
+  oB.append(mkb2('✔ Загрузить сохранение','pri big',()=>{
+    try{
+      applySaveCode(inp.value);
+      stat.textContent='✔ Загружено! Игра перезапустится…';
+      setTimeout(()=>location.reload(),700);
+    }catch(e){
+      stat.textContent='⚠ Код не подошёл: скопируй его целиком, без лишних символов.';
+    }
+  }),stat);
+  oB.append(el('p','hint','После загрузки игра перезапустится, а прогресс этого устройства заменится кодом. Твой код также носит метку игрока — она пригодится для облачного сохранения.'));
   back();
 }
 function rHelp(){
